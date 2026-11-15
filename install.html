@@ -27,7 +27,22 @@ a{color:#6af}
 <p><a href="./">Back to the app</a></p>
 <script>
 const app = new URL('./', location.href).href;
-const code = "javascript:(function(){var t=String(getSelection());if(!t.trim()){var p=[].slice.call(document.querySelectorAll('pre')).filter(function(e){return /\\|.*-/.test(e.innerText)});t=p.map(function(e){return e.innerText}).join('\\n')}location.href='" + app + "#t='+encodeURIComponent(t)})()";
+function grab(APP) {
+  var t = String(getSelection());
+  if (!t.trim()) {
+    var re = /^.{0,12}[|:].*-{3}/;
+    var cnt = function (x) { return x.split('\n').filter(function (l) { return re.test(l); }).length; };
+    var pres = [].map.call(document.querySelectorAll('pre'), function (e) { return e.innerText; }).join('\n');
+    if (cnt(pres) >= 4) t = pres;
+    else {
+      var L = document.body.innerText.split('\n'), f = -1, e = -1;
+      L.forEach(function (l, i) { if (re.test(l)) { if (f < 0) f = i; e = i; } });
+      t = f < 0 ? '' : L.slice(Math.max(0, f - 5), e + 3).join('\n');
+    }
+  }
+  location.href = APP + '#t=' + encodeURIComponent(t);
+}
+const code = 'javascript:(' + grab.toString().replace(/\s*\n\s*/g, ' ') + ')(' + JSON.stringify(app) + ')';
 const box = document.getElementById('code');
 box.value = code;
 document.getElementById('copy').onclick = async () => {

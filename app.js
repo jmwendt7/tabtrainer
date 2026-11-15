@@ -58,6 +58,7 @@ function render(text) {
   }
   const rows = layoutRows(parsed, charsPerRow());
   el.innerHTML = rows.map(row => {
+    if (row.text !== undefined) return `<pre class="tabrow text">${esc(row.text)}</pre>`;
     const lines = row.names.map((n, s) =>
       esc(n.padEnd(1)) + '|' +
       row.measures.map(m => esc((m.lines[s] || '').padEnd(m.width - 1, '-')) + '|').join(''));

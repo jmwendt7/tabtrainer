@@ -27,11 +27,24 @@ G|-5-|-7-|
 D|-5-|-7-|
 `;
 const p1 = parseTab(standard);
-assert.equal(p1.systems[0].measures.length, 3);
-assert.equal(p1.systems[0].names.join(''), 'eBGDAE');
-assert.equal(parseTab(nobars).systems[0].measures.length, 1);
-assert.equal(parseTab(twoSystems).systems.length, 2);
+assert.equal(p1.blocks[1].measures.length, 3);
+assert.equal(p1.blocks[1].names.join(''), 'eBGDAE');
+assert.equal(parseTab(nobars).blocks[0].measures.length, 1);
+assert.equal(parseTab(twoSystems).blocks.filter(b => b.type === 'tab').length, 2);
 assert.equal(parseTab('just some lyrics'), null);
-const rows = layoutRows(p1, 20);
+const rows = layoutRows(p1, 20).filter(r => !r.text);
 assert.ok(rows.length >= 2 && rows.every(r => r.width <= 20));
+const mixed = `[Verse]
+Em       G
+e|--0--3--|--5--| x2
+B|--0--0--|--5--|
+G|--0--0--|--4--|
+D|--2--0--|--5--|
+A|--2--2--|--7--|
+E|--0--3--|--5--|
+la la la
+`;
+const pm = parseTab(mixed);
+assert.deepEqual(pm.blocks.map(b => b.type), ['text', 'tab', 'text']);
+assert.equal(pm.blocks[1].measures.length, 3);
 console.log('parser ok');

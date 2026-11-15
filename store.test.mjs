@@ -1,0 +1,12 @@
+import assert from 'node:assert';
+const mem = {};
+globalThis.localStorage = { getItem: k => (k in mem ? mem[k] : null), setItem: (k, v) => { mem[k] = String(v); } };
+const s = await import('./store.js');
+const a = s.add('Song A', 'x'); const b = s.add('  ', 'y');
+assert.equal(s.list().length, 2);
+assert.equal(b.name, 'Untitled');
+s.rename(a.id, 'Renamed'); assert.equal(s.get(a.id).name, 'Renamed');
+s.rename(a.id, '  '); assert.equal(s.get(a.id).name, 'Renamed');
+s.remove(a.id); assert.deepEqual(s.list().map(t => t.id), [b.id]);
+mem['tt.tabs'] = '{bad'; assert.deepEqual(s.list(), []);
+console.log('store ok');

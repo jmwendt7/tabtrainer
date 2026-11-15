@@ -13,7 +13,7 @@
 </main>
 <div id="banner" hidden><span id="banner-msg"></span><button id="banner-save">Save</button><button id="banner-x" aria-label="Dismiss">✕</button></div>
 <nav id="bar">
-  <div class="row">
+  <div class="row r1">
     <button id="play" aria-label="Start metronome">▶</button>
     <button id="bpm-down" aria-label="Slower">−</button>
     <output id="bpm">90</output>
@@ -26,14 +26,22 @@
       <option value="2">2/4</option>
     </select>
   </div>
-  <div class="row">
-    <button id="paste">Paste</button>
-    <button id="fs-down" aria-label="Smaller text">A−</button>
-    <button id="fs-up" aria-label="Larger text">A+</button>
-    <label class="chk"><input type="checkbox" id="countin"> Count</label>
+  <div class="row r2">
+    <label class="chk"><input type="checkbox" id="countin"> Count-in</label>
     <span id="beats" aria-hidden="true"></span>
   </div>
+  <div class="row r3">
+    <button id="paste">Paste</button>
+    <button id="library">Library</button>
+    <button id="save">Save</button>
+    <button id="fs-down" aria-label="Smaller text">A−</button>
+    <button id="fs-up" aria-label="Larger text">A+</button>
+  </div>
 </nav>
+<dialog id="lib-dlg">
+  <ul id="lib-list"></ul>
+  <div class="row"><button id="lib-close">Close</button></div>
+</dialog>
 <dialog id="paste-dlg">
   <form method="dialog">
     <textarea id="paste-text" placeholder="Paste tab text here" rows="8"></textarea>

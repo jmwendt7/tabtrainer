@@ -251,6 +251,15 @@ $('lib-list').addEventListener('click', e => {
   }
 });
 
+// ---- Find tabs ----
+$('find').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('find-q').value.trim();
+  if (!q) return;
+  const url = 'https://www.google.com/search?q=' + encodeURIComponent(`site:guitaretab.com ${q}`);
+  window.open(url, '_blank', 'noopener');
+});
+
 // ---- Paste ----
 $('paste').addEventListener('click', async () => {
   met.unlock();

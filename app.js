@@ -49,10 +49,18 @@ $('sig').onchange = e => { met.beats = +e.target.value; renderBeats(); };
 $('countin').onchange = e => { met.countIn = e.target.checked; };
 met.onBeat = ({ beat, countIn }) => {
   [...$('beats').children].forEach((el, i) => el.classList.toggle('on', i === beat));
-  if (countIn || beat !== 0 || !st.sel) return;
-  if (ph === null || ph < st.sel.a || ph >= st.sel.b) {
-    if (ph !== null && ph >= st.sel.b && !st.loop && ph >= st.sel.a) return stopPlay();
-    ph = st.sel.a;
+  if (countIn || beat !== 0) return;
+  let lo, hi;
+  if (st.sel) { lo = st.sel.a; hi = st.sel.b; }
+  else {
+    const idx = [...document.querySelectorAll('#tab .m')].map(el => +el.dataset.i);
+    if (!idx.length) return;
+    lo = 0; hi = Math.max(...idx);
+  }
+  if (ph === null || ph < lo || ph > hi) ph = lo;
+  else if (ph === hi) {
+    if (!st.loop && st.sel) return stopPlay();
+    ph = lo;
   } else ph++;
   paintPh();
 };

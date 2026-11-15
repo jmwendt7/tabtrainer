@@ -2,17 +2,20 @@
 //   { type: 'text', lines } for headers/chords/lyrics
 //   { type: 'tab', names, measures: [[line per string]...] } for string groups
 // Returns null when no tab block is found.
-const TAB_LINE = /^\s*(?:[A-Ga-g][#b]?)?\s*[|:]\s*[^\s|]*[-0-9]{3}/;
-
+// A tab line: short string-name prefix (may include markup like [tab]), a bar, then mostly dashes/fret numbers.
 function isTabLine(line) {
-  return TAB_LINE.test(line) && (line.match(/[-0-9]/g) || []).length >= 4;
+  const i = line.search(/[|:]/);
+  if (i < 0 || i > 12) return false;
+  const body = line.slice(i);
+  const dashes = (body.match(/-/g) || []).length;
+  return dashes >= 3 && (body.match(/[-0-9|]/g) || []).length >= body.trim().length * 0.5;
 }
 
 function splitLine(line) {
-  const t = line.trim();
-  const m = t.match(/^([A-Ga-g][#b]?)?\s*[|:]?(.*)$/);
-  const body = m[2].replace(/\|\s*$/, '');
-  return { name: m[1] || '', measures: body.split('|') };
+  const i = line.search(/[|:]/);
+  const name = (line.slice(0, i).replace(/\[[^\]]*\]/g, '').trim().match(/[A-Ga-g][#b]?/) || [''])[0];
+  const body = line.slice(i).replace(/^[|:]+/, '').replace(/[|\s]+$/, '');
+  return { name, measures: body.split(/\|+/) };
 }
 
 export function parseTab(text) {

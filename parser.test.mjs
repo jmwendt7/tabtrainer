@@ -44,6 +44,12 @@ A|--2--2--|--7--|
 E|--0--3--|--5--|
 la la la
 `;
+const odd = `[tab]e||--0--3--||--5--|
+B||--0--0--||--5--|
+G||--0--0--||--4--|
+D||--2--0--||--5--|
+[/tab]`;
+assert.equal(parseTab(odd).blocks.find(b => b.type === 'tab').measures.length, 2);
 const pm = parseTab(mixed);
 assert.deepEqual(pm.blocks.map(b => b.type), ['text', 'tab', 'text']);
 assert.equal(pm.blocks[1].measures.length, 3);

@@ -3,7 +3,7 @@ html, body { margin: 0; height: 100%; overflow-x: hidden; background: #111; colo
   font-family: system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
 #tab { padding: 8px 6px calc(120px + env(safe-area-inset-bottom)); max-width: 100vw; }
 .hint { color: #999; text-align: center; margin-top: 30vh; }
-.tabrow { font: 11px/1.15 ui-monospace, Menlo, Consolas, monospace; white-space: pre;
+.tabrow { font: var(--fs, 13px)/1.25 ui-monospace, Menlo, Consolas, monospace; white-space: pre;
   margin: 0 0 14px; overflow-x: auto; }
 .raw { font: 11px/1.2 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-all; }
 .warn { color: #fc6; font-size: 13px; }
@@ -16,8 +16,8 @@ button, select { min-height: 44px; min-width: 44px; font-size: 18px; border-radi
 #play.on { background: #c43; border-color: #c43; }
 #bpm { min-width: 44px; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; }
 .chk { font-size: 14px; display: flex; align-items: center; gap: 4px; }
-#beats { margin-left: auto; display: flex; gap: 6px; }
-#beats i { width: 14px; height: 14px; border-radius: 50%; background: #444; }
+#beats { margin-left: auto; display: flex; gap: 4px; }
+#beats i { width: 11px; height: 11px; border-radius: 50%; background: #444; }
 #beats i.on { background: #fc3; }
 #beats i.on.first { background: #f55; }
 dialog { width: 92vw; max-width: 500px; background: #1c1c1e; color: #eee; border: 1px solid #444; border-radius: 12px; }
@@ -29,3 +29,5 @@ dialog .row button:last-child { margin-left: auto; }
 #banner span { flex: 1; font-size: 14px; }
 #banner button { min-height: 40px; font-size: 15px; }
 .hint a { color: #6af; }
+#fs-down, #fs-up { padding: 0; font-size: 16px; }
+.tabrow { padding-bottom: 2px; border-bottom: 1px solid #222; }

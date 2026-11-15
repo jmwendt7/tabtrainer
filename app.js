@@ -72,6 +72,18 @@ addEventListener('resize', () => {
   resizeTimer = setTimeout(() => currentText && render(currentText), 150);
 });
 
+// ---- Text size ----
+let fs = +localStorage.getItem('tt.fs') || 13;
+function setFs(v) {
+  fs = Math.max(9, Math.min(24, v));
+  localStorage.setItem('tt.fs', fs);
+  document.documentElement.style.setProperty('--fs', fs + 'px');
+  if (currentText) render(currentText);
+}
+$('fs-down').onclick = () => setFs(fs - 1);
+$('fs-up').onclick = () => setFs(fs + 1);
+document.documentElement.style.setProperty('--fs', fs + 'px');
+
 // ---- Paste ----
 $('paste').addEventListener('click', async () => {
   met.unlock();

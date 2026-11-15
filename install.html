@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install bookmarklet</title>
+<style>
+body{font-family:system-ui;background:#111;color:#eee;padding:16px;max-width:600px;margin:auto;line-height:1.4}
+textarea{width:100%;font:12px monospace;background:#000;color:#eee;border:1px solid #444}
+button{min-height:44px;font-size:18px;padding:0 16px;border-radius:10px;border:0;background:#2a7;color:#fff}
+a{color:#6af}
+</style></head><body>
+<h1>Send tabs to Tab Trainer</h1>
+<textarea id="code" rows="6" readonly></textarea>
+<p><button id="copy">Copy bookmarklet</button> <span id="ok"></span></p>
+<h2>iPhone (Safari)</h2>
+<ol>
+<li>Tap Copy above.</li>
+<li>Tap Share → Add Bookmark, save it as "Send to Tab Trainer".</li>
+<li>Open Bookmarks, long-press it → Edit, replace the address with the copied text, Done.</li>
+<li>On a GuitareTAB tab page, optionally select the tab text, then tap Bookmarks → Send to Tab Trainer.</li>
+</ol>
+<h2>Android (Chrome)</h2>
+<ol>
+<li>Tap Copy above.</li>
+<li>Bookmark any page (⋮ → ☆), then edit the bookmark: name "Send to Tab Trainer", paste the copied text as the URL.</li>
+<li>On a GuitareTAB tab page, type "Send" in the address bar and tap the bookmark suggestion (opening from the Bookmarks list won't run it).</li>
+</ol>
+<p><a href="./">Back to the app</a></p>
+<script>
+const app = new URL('./', location.href).href;
+const code = "javascript:(function(){var t=String(getSelection());if(!t.trim()){var p=[].slice.call(document.querySelectorAll('pre')).filter(function(e){return /\\|.*-/.test(e.innerText)});t=p.map(function(e){return e.innerText}).join('\\n')}location.href='" + app + "#t='+encodeURIComponent(t)})()";
+const box = document.getElementById('code');
+box.value = code;
+document.getElementById('copy').onclick = async () => {
+  try { await navigator.clipboard.writeText(code); document.getElementById('ok').textContent = 'Copied'; }
+  catch { box.select(); document.getElementById('ok').textContent = 'Press and hold, then Copy'; }
+};
+</script></body></html>

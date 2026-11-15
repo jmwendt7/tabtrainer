@@ -84,3 +84,33 @@ $('paste').addEventListener('click', async () => {
 $('paste-dlg').addEventListener('close', () => {
   if ($('paste-dlg').returnValue === 'ok' && $('paste-text').value.trim()) render($('paste-text').value);
 });
+
+// ---- Bookmarklet import (#t=<encoded text>) ----
+function showBanner(msg, canSave) {
+  $('banner-msg').textContent = msg;
+  $('banner-save').hidden = !canSave;
+  $('banner').hidden = false;
+}
+$('banner-x').onclick = () => { $('banner').hidden = true; };
+$('banner-save').onclick = () => {
+  const name = prompt('Name this tab', 'Untitled');
+  if (name === null) return;
+  const tabs = JSON.parse(localStorage.getItem('tt.tabs') || '[]');
+  tabs.push({ id: Date.now().toString(36), name: name.trim() || 'Untitled', text: currentText });
+  localStorage.setItem('tt.tabs', JSON.stringify(tabs));
+  showBanner('Saved.', false);
+};
+
+function importFromHash() {
+  if (!location.hash.startsWith('#t=')) return;
+  let text = '';
+  try { text = decodeURIComponent(location.hash.slice(3)); } catch { /* malformed */ }
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!text.trim()) {
+    $('tab').innerHTML = '<p class="warn">No tab found on that page. Select the tab text and tap the bookmarklet again.</p>';
+    return showBanner('Nothing found on the page.', false);
+  }
+  render(text);
+  showBanner('Tab loaded. Save it?', true);
+}
+importFromHash();

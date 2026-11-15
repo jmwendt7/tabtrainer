@@ -13,6 +13,14 @@
 </main>
 <div id="banner" hidden><span id="banner-msg"></span><button id="banner-save">Save</button><button id="banner-x" aria-label="Dismiss">✕</button></div>
 <nav id="bar">
+  <div class="row r0" id="sec-bar" hidden>
+    <span id="sec-info"></span>
+    <button id="sec-save" hidden>Save</button>
+    <select id="sec-pick" aria-label="Saved sections" hidden></select>
+    <button id="sec-del" aria-label="Delete section" hidden>🗑</button>
+    <button id="loop" aria-pressed="false" aria-label="Toggle loop" hidden>🔁</button>
+    <button id="sec-clear" aria-label="Clear selection" hidden>✕</button>
+  </div>
   <div class="row r1">
     <button id="play" aria-label="Start metronome">▶</button>
     <button id="bpm-down" aria-label="Slower">−</button>

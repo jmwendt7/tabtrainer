@@ -6,6 +6,9 @@ const $ = id => document.getElementById(id);
 const met = new Metronome();
 let currentText = '';
 let currentId = null;
+// Per-tab practice state, persisted with the tab: selected bars, named sections, loop flag.
+let st = { sel: null, sections: [], loop: false, activeSection: null };
+let picking = false;
 
 // ---- Metronome UI ----
 function renderBeats() {
@@ -61,11 +64,12 @@ function render(text) {
   const rows = layoutRows(parsed, charsPerRow());
   el.innerHTML = rows.map(row => {
     if (row.text !== undefined) return `<pre class="tabrow text">${esc(row.text)}</pre>`;
-    const lines = row.names.map((n, s) =>
-      esc(n.padEnd(1)) + '|' +
-      row.measures.map(m => esc((m.lines[s] || '').padEnd(m.width - 1, '-')) + '|').join(''));
-    return `<pre class="tabrow">${lines.join('\n')}</pre>`;
+    const names = row.names.map(n => esc(n.padEnd(1)) + '|').join('\n');
+    const ms = row.measures.map(m =>
+      `<span class="m" data-i="${m.index}">${row.names.map((_, s) => esc((m.lines[s] || '').padEnd(m.width - 1, '-')) + '|').join('\n')}</span>`).join('');
+    return `<div class="tabrow"><span class="nm">${names}</span>${ms}</div>`;
   }).join('');
+  paintSel();
 }
 
 let resizeTimer;
@@ -104,14 +108,90 @@ $('tab').addEventListener('touchend', e => {
   if (pinch && e.touches.length < 2) { pinch = null; setFs(fs); }
 });
 
+// ---- Sections and loop ----
+const persist = () => {
+  if (currentId && store.get(currentId)) store.update(currentId, { sel: st.sel, sections: st.sections, loop: st.loop });
+};
+function paintSel() {
+  document.querySelectorAll('#tab .m').forEach(el => {
+    const i = +el.dataset.i;
+    el.classList.toggle('sel', !!st.sel && i >= st.sel.a && i <= st.sel.b);
+    el.classList.toggle('pending', picking && !!st.sel && i === st.sel.a);
+  });
+  const has = !!st.sel;
+  $('sec-bar').hidden = !has && !st.sections.length;
+  $('sec-info').textContent = has
+    ? (picking ? `Bar ${st.sel.a + 1} – tap last bar` : st.sel.a === st.sel.b ? `Bar ${st.sel.a + 1}` : `Bars ${st.sel.a + 1}–${st.sel.b + 1}`)
+    : 'Tap a bar to start a section';
+  $('sec-save').hidden = !has || picking;
+  $('sec-clear').hidden = !has;
+  $('sec-del').hidden = st.activeSection === null;
+  $('loop').hidden = !has;
+  $('loop').classList.toggle('on', st.loop);
+  $('loop').setAttribute('aria-pressed', st.loop);
+  $('sec-pick').hidden = !st.sections.length;
+  $('sec-pick').innerHTML = '<option value="">Sections</option>' +
+    st.sections.map((s, k) => `<option value="${k}"${st.activeSection === k ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+}
+function resetState(saved) {
+  st = { sel: saved?.sel || null, sections: saved?.sections || [], loop: !!saved?.loop, activeSection: null };
+  picking = false;
+}
+$('tab').addEventListener('click', e => {
+  const m = e.target.closest('.m');
+  if (!m) return;
+  const i = +m.dataset.i;
+  if (picking) {
+    st.sel = { a: Math.min(st.sel.a, i), b: Math.max(st.sel.a, i) };
+    picking = false;
+  } else {
+    st.sel = { a: i, b: i };
+    picking = true;
+  }
+  st.activeSection = null;
+  persist();
+  paintSel();
+});
+$('sec-clear').onclick = () => { st.sel = null; picking = false; st.activeSection = null; persist(); paintSel(); };
+$('loop').onclick = () => { st.loop = !st.loop; persist(); paintSel(); };
+$('sec-save').onclick = () => {
+  const name = prompt('Name this section', `Bars ${st.sel.a + 1}–${st.sel.b + 1}`);
+  if (name === null) return;
+  st.sections.push({ name: name.trim() || 'Section', a: st.sel.a, b: st.sel.b });
+  st.activeSection = st.sections.length - 1;
+  persist();
+  paintSel();
+};
+$('sec-pick').onchange = e => {
+  const s = st.sections[+e.target.value];
+  if (!s) { st.activeSection = null; return paintSel(); }
+  st.sel = { a: s.a, b: s.b };
+  st.activeSection = +e.target.value;
+  picking = false;
+  persist();
+  paintSel();
+};
+$('sec-del').onclick = () => {
+  const s = st.sections[st.activeSection];
+  if (s && confirm(`Delete section "${s.name}"?`)) {
+    st.sections.splice(st.activeSection, 1);
+    st.activeSection = null;
+    persist();
+    paintSel();
+  }
+};
+new ResizeObserver(() => document.documentElement.style.setProperty('--barh', $('bar').offsetHeight + 'px')).observe($('bar'));
+
 // ---- Library ----
 function loadNew(text) {
   currentId = null;
+  resetState(null);
   render(text);
 }
 function openTab(tab) {
   currentId = tab.id;
   localStorage.setItem('tt.last', tab.id);
+  resetState(tab);
   render(tab.text);
   $('banner').hidden = true;
 }
@@ -122,6 +202,7 @@ function saveCurrent() {
   if (name === null) return;
   const tab = store.add(name, currentText);
   currentId = tab.id;
+  persist();
   localStorage.setItem('tt.last', tab.id);
   showBanner('Saved.', false);
 }

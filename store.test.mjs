@@ -7,6 +7,7 @@ assert.equal(s.list().length, 2);
 assert.equal(b.name, 'Untitled');
 s.rename(a.id, 'Renamed'); assert.equal(s.get(a.id).name, 'Renamed');
 s.rename(a.id, '  '); assert.equal(s.get(a.id).name, 'Renamed');
+s.update(a.id, { loop: true, sel: { a: 1, b: 2 } }); assert.deepEqual(s.get(a.id).sel, { a: 1, b: 2 }); assert.equal(s.get(a.id).name, 'Renamed');
 s.remove(a.id); assert.deepEqual(s.list().map(t => t.id), [b.id]);
 mem['tt.tabs'] = '{bad'; assert.deepEqual(s.list(), []);
 console.log('store ok');

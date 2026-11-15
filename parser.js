@@ -118,13 +118,14 @@ export function layoutRows(parsed, maxChars) {
     if (sys.type === 'text') { rows.push({ text: sys.lines.join('\n') }); continue; }
     let row = null;
     for (const whole of sys.measures) {
+      const index = measureIndex++; // logical measure; chunks of an over-wide one share it
       for (const m of chunkMeasure(whole, maxChars - 3)) {
         const w = Math.max(...m.map(s => s.length)) + 1;
         if (!row || row.width + w > maxChars) {
           row = { names: sys.names, measures: [], width: 2 };
           rows.push(row);
         }
-        row.measures.push({ index: measureIndex++, lines: m, width: w });
+        row.measures.push({ index, lines: m, width: w });
         row.width += w;
       }
     }

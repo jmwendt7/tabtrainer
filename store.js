@@ -25,3 +25,7 @@ export function rename(id, name) {
 export function remove(id) {
   save(load().filter(t => t.id !== id));
 }
+
+export function update(id, patch) {
+  save(load().map(t => (t.id === id ? { ...t, ...patch } : t)));
+}

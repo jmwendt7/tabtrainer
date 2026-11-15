@@ -15,27 +15,46 @@ function renderBeats() {
   $('beats').innerHTML = Array.from({ length: met.beats }, (_, i) => `<i class="${i ? '' : 'first'}"></i>`).join('');
 }
 function setBpm(v) {
-  met.bpm = Math.max(30, Math.min(300, v));
+  met.bpm = Math.max(30, Math.min(300, Math.round(v)));
   $('bpm').textContent = met.bpm;
+  $('tempo').value = met.bpm;
+}
+$('tempo').oninput = e => setBpm(+e.target.value);
+let ph = null; // bar the playhead is on
+function paintPh() {
+  document.querySelectorAll('#tab .m.ph').forEach(el => el.classList.remove('ph'));
+  if (ph === null) return;
+  const els = document.querySelectorAll(`#tab .m[data-i="${ph}"]`);
+  els.forEach(el => el.classList.add('ph'));
+  if (els[0]) els[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function stopPlay() {
+  met.stop();
+  ph = null;
+  paintPh();
+  $('play').classList.remove('on');
+  $('play').textContent = '▶';
+  renderBeats();
 }
 $('play').addEventListener('click', () => {
-  if (met.running) {
-    met.stop();
-    $('play').classList.remove('on');
-    $('play').textContent = '▶';
-    renderBeats();
-  } else {
-    met.start();
-    $('play').classList.add('on');
-    $('play').textContent = '■';
-  }
+  if (met.running) return stopPlay();
+  ph = null;
+  met.start();
+  $('play').classList.add('on');
+  $('play').textContent = '■';
 });
 $('bpm-down').onclick = () => setBpm(met.bpm - 1);
 $('bpm-up').onclick = () => setBpm(met.bpm + 1);
 $('sig').onchange = e => { met.beats = +e.target.value; renderBeats(); };
 $('countin').onchange = e => { met.countIn = e.target.checked; };
-met.onBeat = ({ beat }) => {
+met.onBeat = ({ beat, countIn }) => {
   [...$('beats').children].forEach((el, i) => el.classList.toggle('on', i === beat));
+  if (countIn || beat !== 0 || !st.sel) return;
+  if (ph === null || ph < st.sel.a || ph >= st.sel.b) {
+    if (ph !== null && ph >= st.sel.b && !st.loop && ph >= st.sel.a) return stopPlay();
+    ph = st.sel.a;
+  } else ph++;
+  paintPh();
 };
 renderBeats();
 
@@ -70,6 +89,7 @@ function render(text) {
     return `<div class="tabrow"><span class="nm">${names}</span>${ms}</div>`;
   }).join('');
   paintSel();
+  paintPh();
 }
 
 let resizeTimer;

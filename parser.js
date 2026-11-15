@@ -2,10 +2,17 @@
 //   { type: 'text', lines } for headers/chords/lyrics
 //   { type: 'tab', names, measures: [[line per string]...] } for string groups
 // Returns null when no tab block is found.
+// Bar-less line like "e-----0---3---": a string name followed by mostly tab characters.
+const BARLESS = /^\s*(?:\[[^\]]*\])?\s*[A-Ga-g][#b]?\s*-[-0-9hpbrsx/\\~^()<>.*\s]*$/;
+
+function isBarless(line) {
+  return BARLESS.test(line) && (line.match(/-/g) || []).length >= 8;
+}
+
 // A tab line: short string-name prefix (may include markup like [tab]), a bar, then mostly dashes/fret numbers.
 function isTabLine(line) {
   const i = line.search(/[|:]/);
-  if (i < 0 || i > 12) return false;
+  if (i < 0 || i > 12) return isBarless(line);
   const body = line.slice(i);
   const dashes = (body.match(/-/g) || []).length;
   return dashes >= 3 && (body.match(/[-0-9|]/g) || []).length >= body.trim().length * 0.5;
@@ -13,6 +20,10 @@ function isTabLine(line) {
 
 function splitLine(line) {
   const i = line.search(/[|:]/);
+  if (i < 0 || i > 12) {
+    const m = line.replace(/\[[^\]]*\]/g, '').match(/^\s*([A-Ga-g][#b]?)\s*(.*)$/);
+    return { name: m[1], measures: [m[2].trimEnd()] };
+  }
   const name = (line.slice(0, i).replace(/\[[^\]]*\]/g, '').trim().match(/[A-Ga-g][#b]?/) || [''])[0];
   const body = line.slice(i).replace(/^[|:]+/, '').replace(/[|\s]+$/, '');
   return { name, measures: body.split(/\|+/) };
@@ -51,6 +62,23 @@ export function parseTab(text) {
   return blocks.some(b => b.type === 'tab') ? { blocks } : null;
 }
 
+// Split a measure wider than limit at a column where every string is a dash/space.
+function chunkMeasure(lines, limit) {
+  const width = Math.max(...lines.map(l => l.length));
+  if (width <= limit) return [lines];
+  const chunks = [];
+  let start = 0;
+  while (width - start > limit) {
+    let cut = start + limit;
+    while (cut > start + 1 && !lines.every(l => (l[cut] || '-') === '-' || l[cut] === ' ')) cut--;
+    if (cut <= start + 1) cut = start + limit;
+    chunks.push(lines.map(l => l.slice(start, cut)));
+    start = cut;
+  }
+  chunks.push(lines.map(l => l.slice(start)));
+  return chunks;
+}
+
 // Flatten measures across systems and wrap into rows fitting maxChars.
 export function layoutRows(parsed, maxChars) {
   const rows = [];
@@ -58,14 +86,16 @@ export function layoutRows(parsed, maxChars) {
   for (const sys of parsed.blocks) {
     if (sys.type === 'text') { rows.push({ text: sys.lines.join('\n') }); continue; }
     let row = null;
-    for (const m of sys.measures) {
-      const w = Math.max(...m.map(s => s.length)) + 1;
-      if (!row || row.width + w > maxChars) {
-        row = { names: sys.names, measures: [], width: 2 };
-        rows.push(row);
+    for (const whole of sys.measures) {
+      for (const m of chunkMeasure(whole, maxChars - 3)) {
+        const w = Math.max(...m.map(s => s.length)) + 1;
+        if (!row || row.width + w > maxChars) {
+          row = { names: sys.names, measures: [], width: 2 };
+          rows.push(row);
+        }
+        row.measures.push({ index: measureIndex++, lines: m, width: w });
+        row.width += w;
       }
-      row.measures.push({ index: measureIndex++, lines: m, width: w });
-      row.width += w;
     }
   }
   return rows;

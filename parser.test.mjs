@@ -50,6 +50,18 @@ G||--0--0--||--4--|
 D||--2--0--||--5--|
 [/tab]`;
 assert.equal(parseTab(odd).blocks.find(b => b.type === 'tab').measures.length, 2);
+const barless = `e-----0---3---5---0---3---5---0---3---5---0---
+B-----1---0---1---3---0---1---3---0---1---3---
+G-----0---0---2---0---0---2---0---0---2---0---
+D-----2---2---2---0---2---2---0---2---2---0---
+A-----3---2---0---2---2---0---2---2---0---2---
+E-------------------------------------------
+Chorus`;
+const bl = parseTab(barless);
+assert.equal(bl.blocks[0].type, 'tab');
+const brows = layoutRows(bl, 30).filter(r => !r.text);
+assert.ok(brows.length >= 2 && brows.every(r => r.width <= 30));
+assert.equal(parseTab('The end -- not a tab\nE is for everything'), null);
 const pm = parseTab(mixed);
 assert.deepEqual(pm.blocks.map(b => b.type), ['text', 'tab', 'text']);
 assert.equal(pm.blocks[1].measures.length, 3);

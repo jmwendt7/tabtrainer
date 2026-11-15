@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>Tab Trainer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="tab" aria-live="polite">
+  <p class="hint">Tap <b>Paste</b> to load a tab.</p>
+</main>
+<nav id="bar">
+  <div class="row">
+    <button id="play" aria-label="Start metronome">▶</button>
+    <button id="bpm-down" aria-label="Slower">−</button>
+    <output id="bpm">90</output>
+    <button id="bpm-up" aria-label="Faster">+</button>
+    <select id="sig" aria-label="Time signature">
+      <option value="4" selected>4/4</option>
+      <option value="3">3/4</option>
+      <option value="6">6/8</option>
+      <option value="5">5/4</option>
+      <option value="2">2/4</option>
+    </select>
+  </div>
+  <div class="row">
+    <button id="paste">Paste</button>
+    <label class="chk"><input type="checkbox" id="countin"> Count-in</label>
+    <span id="beats" aria-hidden="true"></span>
+  </div>
+</nav>
+<dialog id="paste-dlg">
+  <form method="dialog">
+    <textarea id="paste-text" placeholder="Paste tab text here" rows="8"></textarea>
+    <div class="row">
+      <button value="cancel">Cancel</button>
+      <button id="paste-ok" value="ok">Load</button>
+    </div>
+  </form>
+</dialog>
+<script type="module" src="app.js"></script>
+</body>
+</html>

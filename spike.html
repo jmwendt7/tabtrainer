@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T0 bookmarklet spike</title>
+<body style="font-family:system-ui;padding:16px">
+<h1>T0 spike</h1>
+<p>Copy this, create a bookmark whose URL is this text, then open a GuitareTAB tab page and run it.</p>
+<textarea id="b" rows="6" style="width:100%"></textarea>
+<button id="c">Copy</button>
+<script>
+const code = "javascript:(function(){var t=(getSelection().toString()||(document.querySelector('pre')||{}).innerText||'');alert(t?('OK: read '+t.length+' chars\\n\\n'+t.slice(0,200)):'Ran, but found no tab text');})()";
+b.value = code;
+c.onclick = () => { b.select(); navigator.clipboard.writeText(code); };
+</script>

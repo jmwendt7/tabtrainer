@@ -62,6 +62,30 @@ assert.equal(bl.blocks[0].type, 'tab');
 const brows = layoutRows(bl, 30).filter(r => !r.text);
 assert.ok(brows.length >= 2 && brows.every(r => r.width <= 30));
 assert.equal(parseTab('The end -- not a tab\nE is for everything'), null);
+const numbered = `Intro-
+
+1---------------------3-------------------3
+2---------------------3-------------------3
+3---------------------0-------0-----------0
+
+4-------------0--2----0----2-----2--------0          Do it twice
+5------0h2------------2-------------------2
+6---3-----------------x-------------------3
+
+
+
+1---------------------3---------------------------------3
+2---------------------3---------------------------------3
+3---------------------0---------------------------------2
+
+4-------------0--2----0------2-----0--------------------2   Do it Twice
+5------0h2------------2------------------2-------0------0
+6---3-----------------x---------------------------------0`;
+const pn = parseTab(numbered);
+const ptabs = pn.blocks.filter(b => b.type === 'tab');
+assert.equal(ptabs.length, 2);
+assert.equal(ptabs[0].names.join(''), 'eBGDAE');
+assert.ok(pn.blocks.some(b => b.type === 'text' && b.lines.join('').includes('Do it twice')));
 const pm = parseTab(mixed);
 assert.deepEqual(pm.blocks.map(b => b.type), ['text', 'tab', 'text']);
 assert.equal(pm.blocks[1].measures.length, 3);

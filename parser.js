@@ -29,8 +29,39 @@ function splitLine(line) {
   return { name, measures: body.split(/\|+/) };
 }
 
+// Numbered strings ("1---0---", 1 = high e, 6 = low E): rewrite to "e|---0---|".
+// Blank lines inside a string group are allowed; trailing notes become text lines.
+const NUMBERED = /^\s*([1-6])\s*(-[-0-9hpbrsx/\\~^()<>.*]*)(?:\s{2,}(\S.*))?\s*$/;
+const STRING_NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
+
+function normalizeNumbered(lines) {
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = NUMBERED.exec(lines[i]);
+    if (!m) { out.push(lines[i]); continue; }
+    const group = [];
+    const notes = [];
+    let prev = 0;
+    let j = i;
+    while (j < lines.length) {
+      let k = j;
+      while (k < lines.length && !lines[k].trim()) k++;
+      const mm = k < lines.length && NUMBERED.exec(lines[k]);
+      if (!mm || +mm[1] <= prev || (k > j && prev === 0)) break;
+      prev = +mm[1];
+      group.push(`${STRING_NAMES[prev - 1]}|${mm[2].trimEnd()}|`);
+      if (mm[3]) notes.push(mm[3].trim());
+      j = k + 1;
+      if (prev === 6) break;
+    }
+    out.push(...group, ...notes);
+    i = j - 1;
+  }
+  return out;
+}
+
 export function parseTab(text) {
-  const lines = String(text || '').replace(/\r/g, '').split('\n');
+  const lines = normalizeNumbered(String(text || '').replace(/\r/g, '').split('\n'));
   const blocks = [];
   let group = [];
   let plain = [];
